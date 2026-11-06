@@ -4,47 +4,84 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PSVK3443 Portfolio Seni Visual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script>(function(){try{var t=localStorage.getItem('psvk3443-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t)}catch(e){document.documentElement.setAttribute('data-theme','light')}})();</script>
 <style>
-:root{--navy:#1E2A3A;--teal:#1F6F6B;--amber:#E0A458;--bg:#F7F5F0;--card:#fff;--line:#D9DEE4;--mute:#5B6674;--red:#A33B2A;--yel:#B7791F;--grn:#1F6F6B}
+:root{--navy:#1C1330;--ink:#1C1330;--teal:#00806E;--amber:#FFC53D;--coral:#FF4F5E;--bg:#FFFBF2;--card:#FFFFFF;--line:rgba(28,19,48,.12);--mute:#4A3E63;--red:#C42A40;--yel:#9A6A00;--grn:#00806E;--track:#F1ECE0;--tint:#FFF3E0;--nav:rgba(255,251,242,.9);--text:#1C1330;--shadow:0 14px 34px rgba(28,19,48,.10)}
+:root[data-theme="dark"]{--bg:#15111B;--card:#241B34;--line:rgba(255,255,255,.16);--mute:#C6B9E0;--track:#2E2340;--tint:#2A2036;--nav:rgba(21,17,27,.88);--text:#F2ECFB;--navy:#F2ECFB;--shadow:0 14px 34px rgba(0,0,0,.45);--red:#FF7A89;--yel:#FFC53D;--grn:#2FD6BE;--teal:#00967F}
 *{box-sizing:border-box}
-body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--navy);line-height:1.5}
-header{background:var(--navy);color:#fff;padding:14px 20px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-header h1{font-size:18px;margin:0}
-header small{color:#C9D2DD}
-main{max-width:980px;margin:0 auto;padding:20px 16px 60px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin:0 0 14px}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;transition:background .25s,color .25s;min-height:100vh}
+h1,h2,h3{font-family:'Unbounded',sans-serif;letter-spacing:-.01em}
+h2{font-size:1.5rem;font-weight:700;margin:6px 0 12px}h3{font-size:1.05rem;font-weight:600;margin:0 0 6px}
+.mono,.meta,th{font-family:'Space Mono',monospace}
+.bg-parallax{position:fixed;left:0;top:-60vh;width:100%;height:220vh;z-index:-1;pointer-events:none;will-change:transform;
+  background:radial-gradient(closest-side at 12% 14%,rgba(255,79,94,.22),transparent 70%),radial-gradient(closest-side at 86% 30%,rgba(0,191,166,.20),transparent 70%),radial-gradient(closest-side at 18% 52%,rgba(255,197,61,.26),transparent 70%),radial-gradient(closest-side at 80% 72%,rgba(139,92,246,.20),transparent 70%),radial-gradient(closest-side at 30% 92%,rgba(255,79,94,.16),transparent 70%)}
+.bg-parallax::before{content:"";position:absolute;inset:0;opacity:.5;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:72px 72px}
+header{position:sticky;top:0;z-index:20;background:var(--nav);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:12px 24px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--text)}
+.brand-mark{width:36px;height:36px;border-radius:6px;background:linear-gradient(135deg,var(--coral),#8B5CF6);position:relative;flex-shrink:0}
+.brand-mark::after{content:"";position:absolute;inset:8px;border-radius:3px;background:var(--amber)}
+.brand-name{font-family:'Unbounded',sans-serif;font-weight:700;font-size:.95rem;line-height:1.2}
+.brand-sub{font-family:'Space Mono',monospace;font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mute)}
+.hr{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:.9rem}
+.hr a{color:var(--text);text-decoration:none;font-weight:600}
+main{max-width:980px;margin:0 auto;padding:28px 16px 70px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:18px;margin:0 0 14px;box-shadow:var(--shadow)}
 .tabs{display:flex;gap:8px;margin:0 0 16px;flex-wrap:wrap}
-.tab,.btn{font:inherit;border:1px solid var(--navy);background:#fff;color:var(--navy);padding:9px 14px;border-radius:9px;cursor:pointer}
-.tab.on,.btn.pri{background:var(--navy);color:#fff}
+.tab,.btn{font:inherit;font-weight:600;font-size:.9rem;border:2px solid var(--text);background:var(--card);color:var(--text);padding:8px 14px;border-radius:4px;cursor:pointer;transition:transform .15s,background .15s}
+.tab:hover,.btn:hover{transform:translateY(-1px)}
+.tab.on,.btn.pri{background:var(--text);color:var(--bg)}
 .btn.teal{background:var(--teal);border-color:var(--teal);color:#fff}
 .btn.del{border-color:var(--red);color:var(--red)}
 .btn:disabled{opacity:.5;cursor:default}
 label{display:block;font-weight:600;margin:12px 0 4px}
-input[type=text],input[type=url],input[type=date],select,textarea{width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+input[type=text],input[type=url],input[type=date],select,textarea{width:100%;font:inherit;color:var(--text);padding:10px;border:1px solid var(--line);border-radius:4px;background:var(--card)}
 textarea{min-height:130px;resize:vertical}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:640px){.row{grid-template-columns:1fr}}
 .hint{color:var(--mute);font-size:14px;margin:4px 0 0}
 .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
-.thumbs img{height:110px;width:auto;border-radius:8px;border:1px solid var(--line);display:block}
+.thumbs img{height:110px;width:auto;border-radius:4px;border:1px solid var(--line);display:block}
 .thumb{position:relative}
 .thumb button{position:absolute;top:4px;right:4px;border:0;background:rgba(0,0,0,.65);color:#fff;border-radius:50%;width:26px;height:26px;cursor:pointer}
-.badge{display:inline-block;padding:2px 10px;border-radius:99px;font-size:13px;font-weight:600;color:#fff}
-.b-menunggu{background:var(--mute)}.b-teruskan{background:var(--grn)}.b-perbincangan{background:var(--yel)}.b-susulan{background:var(--red)}
-.meta{color:var(--mute);font-size:14px}
-.fb{background:#EEF4F3;border-left:4px solid var(--teal);padding:8px 12px;border-radius:6px;margin-top:8px}
-.note{background:#FFF7E6;border:1px solid #E8D3A5;border-radius:10px;padding:12px 14px;font-size:15px}
+.badge{display:inline-block;padding:2px 10px;border-radius:3px;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:#fff}
+.b-menunggu{background:#6B6080}.b-teruskan{background:#00806E}.b-perbincangan{background:#9A6A00}.b-susulan{background:#C42A40}
+.meta{color:var(--mute);font-size:13px}
+.fb{background:var(--track);border-left:4px solid var(--teal);padding:8px 12px;border-radius:0 4px 4px 0;margin-top:8px}
+.note{background:var(--tint);border:1px solid var(--line);border-radius:6px;padding:12px 14px;font-size:15px}
 table{border-collapse:collapse;width:100%}
 th,td{border-bottom:1px solid var(--line);padding:8px;text-align:left;font-size:15px}
-th{background:var(--navy);color:#fff}
-tr.click{cursor:pointer}tr.click:hover{background:#EEF1F5}
+th{background:#1C1330;color:#fff;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+tr.click{cursor:pointer}tr.click:hover{background:var(--track)}
 .center{text-align:center;padding:48px 16px}
 .err{color:var(--red);font-weight:600}
 .ok{color:var(--grn);font-weight:600}
-h2{margin:6px 0 12px}h3{margin:0 0 6px}
+.theme{border:2px solid var(--line);background:transparent;color:var(--text);width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:16px}
+/* ---------- Log masuk ---------- */
+.login-wrap{min-height:calc(100vh - 160px);display:flex;align-items:center;justify-content:center}
+.login{display:grid;grid-template-columns:1fr 1fr;width:100%;max-width:880px;border-radius:6px;overflow:hidden;box-shadow:0 24px 60px rgba(28,19,48,.2);border:1px solid var(--line)}
+.login-side{background:#1C1330;color:#fff;padding:40px 36px;display:flex;flex-direction:column;justify-content:space-between;gap:28px;position:relative;overflow:hidden}
+.login-side::before{content:"";position:absolute;width:320px;height:320px;right:-120px;top:-100px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,79,94,.55),transparent)}
+.login-side::after{content:"";position:absolute;width:300px;height:300px;left:-110px;bottom:-110px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,191,166,.45),transparent)}
+.login-side>*{position:relative;z-index:1}
+.login-side h2{color:#fff;font-size:1.6rem;line-height:1.2;margin:14px 0 0}
+.login-side h2 span{color:var(--amber)}
+.login-side p{color:rgba(255,255,255,.75);font-size:.95rem;margin:0}
+.login-side .code{font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+.login-main{background:var(--card);padding:40px 36px;display:flex;flex-direction:column;justify-content:center;gap:14px}
+.login-main h2{margin:0;font-size:1.3rem}
+.login-main p{margin:0;color:var(--mute);font-size:.95rem}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;font:inherit;font-weight:700;border:2px solid var(--text);background:var(--card);color:var(--text);padding:12px 16px;border-radius:4px;cursor:pointer;transition:transform .15s,background .15s,color .15s}
+.gbtn:hover{background:var(--text);color:var(--bg);transform:translateY(-2px)}
+.privacy{font-size:.82rem;color:var(--mute);border-top:1px solid var(--line);padding-top:14px}
+.back{color:var(--mute);font-size:.9rem}
+@media(max-width:760px){.login{grid-template-columns:1fr}.login-side{padding:28px 24px}.login-main{padding:28px 24px}}
 </style>
 </head>
 <body>
+<div class="bg-parallax" id="bgParallax" aria-hidden="true"></div>
 <div id="app"></div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
@@ -129,14 +166,17 @@ async function loadAdmin() {
 /* ---------- Paparan ---------- */
 function shell(inner) {
   const who = S.user ? `<span>${esc(S.profile?.nama || S.user.displayName || S.user.email)}</span> <button class="btn" data-act="keluar" style="padding:5px 10px">Log keluar</button>` : "";
-  return `<header><div><h1>PSVK3443 Portfolio Seni Visual</h1><small>Asas Membentuk dan Membuat Binaan</small></div><div><a href="./" style="color:#fff;margin-right:12px">&larr; Laman utama</a>${who}</div></header><main>${inner}</main>`;
+  return `<header><a class="brand" href="./"><div class="brand-mark"></div><div><div class="brand-name">PSVK3443</div><div class="brand-sub">Portfolio Seni Visual</div></div></a><div class="hr"><a href="./">&larr; Laman utama</a>${who}<button class="theme" data-act="tema" aria-label="Tukar mod terang/gelap">&#9680;</button></div></header><main>${inner}</main>`;
 }
 function viewLogin() {
-  return shell(`<div class="card center"><h2>Log masuk</h2>
-    <p>Gunakan akaun Google yang didaftarkan oleh pensyarah.</p>
-    <p><button class="btn pri" data-act="masuk">Log masuk dengan Google</button></p>
-    <p class="err">${esc(S.msg)}</p></div>
-    <div class="note"><b>Nota privasi.</b> Gambar dan tulisan yang anda muat naik disimpan dalam Firebase (Google Cloud) dan hanya boleh dilihat oleh anda dan pensyarah, kecuali karya yang dipilih pensyarah untuk galeri awam dengan persetujuan anda. Juruaudit boleh diberi akses baca sahaja atas permintaan. Hasil kerja disimpan selama 5 tahun untuk tujuan audit, kemudian dihapuskan atau dikembalikan kepada anda. Sistem merekod masa muat naik untuk tujuan audit; masa itu tidak dipaparkan kepada pelajar dan tidak digunakan untuk menolak penghantaran. Hanya data yang perlu dikumpulkan (nama dan e-mel).</div>`);
+  return shell(`<div class="login-wrap"><div class="login">
+    <div class="login-side"><div><div class="code">PSVK3443 · IPGM Kampus Kent</div><h2>Asas Membentuk <span>dan Membuat Binaan</span></h2></div><p>Ruang pelajar untuk memuat naik dokumentasi proses, gambar dan penghantaran akhir.</p></div>
+    <div class="login-main"><h2>Log masuk</h2>
+      <p>Gunakan akaun Google yang didaftarkan oleh pensyarah.</p>
+      <button class="gbtn" data-act="masuk"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>Log masuk dengan Google</button>
+      <p class="err">${esc(S.msg)}</p>
+      <p class="privacy"><b>Nota privasi.</b> Gambar dan tulisan yang anda muat naik disimpan dalam Firebase (Google Cloud) dan hanya boleh dilihat oleh anda dan pensyarah, kecuali karya yang dipilih pensyarah untuk galeri awam dengan persetujuan anda. Hasil kerja disimpan selama 5 tahun untuk tujuan audit.</p>
+    </div></div></div>`);
 }
 function viewTiada() {
   return shell(`<div class="card center"><h2>E-mel belum didaftarkan</h2><p>${esc(S.user.email)} tiada dalam senarai pelajar. Sila hubungi pensyarah.</p></div>`);
@@ -345,6 +385,11 @@ $.addEventListener("change", async ev => {
     render();
   }
 });
+
+const bg = document.getElementById("bgParallax");
+const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function par() { if (still) return; const vh = innerHeight, mx = document.documentElement.scrollHeight - vh, q = mx > 0 ? Math.min(1, Math.max(0, scrollY / mx)) : 0; bg.style.transform = `translate3d(0,${(q - 0.5) * 120}vh,0)`; }
+addEventListener("scroll", () => requestAnimationFrame(par), { passive: true }); addEventListener("resize", par); par();
 
 onAuthStateChanged(auth, async u => {
   S.user = u; S.role = null; S.profile = null; S.msg = "";
