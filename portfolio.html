@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PSVK3443 Portfolio Seni Visual</title>
+<style>
+:root{--navy:#1E2A3A;--teal:#1F6F6B;--amber:#E0A458;--bg:#F7F5F0;--card:#fff;--line:#D9DEE4;--mute:#5B6674;--red:#A33B2A;--yel:#B7791F;--grn:#1F6F6B}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--navy);line-height:1.5}
+header{background:var(--navy);color:#fff;padding:14px 20px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+header h1{font-size:18px;margin:0}
+header small{color:#C9D2DD}
+main{max-width:980px;margin:0 auto;padding:20px 16px 60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin:0 0 14px}
+.tabs{display:flex;gap:8px;margin:0 0 16px;flex-wrap:wrap}
+.tab,.btn{font:inherit;border:1px solid var(--navy);background:#fff;color:var(--navy);padding:9px 14px;border-radius:9px;cursor:pointer}
+.tab.on,.btn.pri{background:var(--navy);color:#fff}
+.btn.teal{background:var(--teal);border-color:var(--teal);color:#fff}
+.btn.del{border-color:var(--red);color:var(--red)}
+.btn:disabled{opacity:.5;cursor:default}
+label{display:block;font-weight:600;margin:12px 0 4px}
+input[type=text],input[type=url],input[type=date],select,textarea{width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+textarea{min-height:130px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.row{grid-template-columns:1fr}}
+.hint{color:var(--mute);font-size:14px;margin:4px 0 0}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.thumbs img{height:110px;width:auto;border-radius:8px;border:1px solid var(--line);display:block}
+.thumb{position:relative}
+.thumb button{position:absolute;top:4px;right:4px;border:0;background:rgba(0,0,0,.65);color:#fff;border-radius:50%;width:26px;height:26px;cursor:pointer}
+.badge{display:inline-block;padding:2px 10px;border-radius:99px;font-size:13px;font-weight:600;color:#fff}
+.b-menunggu{background:var(--mute)}.b-teruskan{background:var(--grn)}.b-perbincangan{background:var(--yel)}.b-susulan{background:var(--red)}
+.meta{color:var(--mute);font-size:14px}
+.fb{background:#EEF4F3;border-left:4px solid var(--teal);padding:8px 12px;border-radius:6px;margin-top:8px}
+.note{background:#FFF7E6;border:1px solid #E8D3A5;border-radius:10px;padding:12px 14px;font-size:15px}
+table{border-collapse:collapse;width:100%}
+th,td{border-bottom:1px solid var(--line);padding:8px;text-align:left;font-size:15px}
+th{background:var(--navy);color:#fff}
+tr.click{cursor:pointer}tr.click:hover{background:#EEF1F5}
+.center{text-align:center;padding:48px 16px}
+.err{color:var(--red);font-weight:600}
+.ok{color:var(--grn);font-weight:600}
+h2{margin:6px 0 12px}h3{margin:0 0 6px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAX9BmY_5QOn1_DaALGaAa6RJM1NKt_TSs",
+  authDomain: "psvk3443-seni-visual.firebaseapp.com",
+  projectId: "psvk3443-seni-visual",
+  storageBucket: "psvk3443-seni-visual.firebasestorage.app",
+  messagingSenderId: "605735909144",
+  appId: "1:605735909144:web:254ae6660675983ea4906d"
+};
+// E-mel pensyarah (admin). Mesti sama dengan senarai dalam firestore.rules.
+const ADMIN_EMAILS = ["handrekganang@ipgm.edu.my", "supianhandrekganang@gmail.com"];
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const $ = document.getElementById("app");
+
+const TUGASAN = { T2: "Tugasan 2: e-Portfolio", T3: "Tugasan 3: Hasil Karya" };
+const BAHAGIAN = ["Deklarasi Tema Peribadi","Pemerhatian","Penerokaan bahan dan alat","Teknik: picitan","Teknik: lipatan","Teknik: potongan","Teknik: cantuman","Teknik: pembungkusan","Teknik: guntingan","Teknik: luakan","Mood-board digital","Lakaran idea / prototaip","Penghalusan karya","Karya akhir","Pelan Kos","Refleksi","Lain-lain"];
+const STATUS = { menunggu: "Menunggu semakan", teruskan: "Teruskan", perbincangan: "Perlu Perbincangan", susulan: "Perlu Susulan" };
+const JENIS = { eportfolio_t2: "e-Portfolio (Tugasan 2)", karya_akhir_t3: "Karya Akhir + Pelan Kos (Tugasan 3)" };
+const MAX_IMG = 3;
+
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const ms = t => (t && t.toMillis ? t.toMillis() : Date.now());
+const fmt = t => (t && t.toDate ? t.toDate().toLocaleString("ms-MY") : "");
+const words = s => (String(s || "").trim().match(/\S+/g) || []).length;
+const badge = s => `<span class="badge b-${esc(s || "menunggu")}">${esc(STATUS[s || "menunggu"])}</span>`;
+
+const S = { user: null, role: null, profile: null, tab: "entri", msg: "", entri: [], pengh: {}, form: null,
+  admin: { reg: [], entri: [], pengh: [], sel: null, gal: {} } };
+
+/* ---------- Gambar ---------- */
+function loadImg(file) {
+  return new Promise((res, rej) => {
+    const u = URL.createObjectURL(file), im = new Image();
+    im.onload = () => { URL.revokeObjectURL(u); res(im); };
+    im.onerror = () => rej(new Error("Gambar tidak dapat dibuka"));
+    im.src = u;
+  });
+}
+async function compress(file) {
+  const im = await loadImg(file);
+  let max = 1280, q = 0.8, url = "";
+  for (let i = 0; i < 10; i++) {
+    const sc = Math.min(1, max / Math.max(im.naturalWidth, im.naturalHeight));
+    const c = document.createElement("canvas");
+    c.width = Math.round(im.naturalWidth * sc); c.height = Math.round(im.naturalHeight * sc);
+    c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+    url = c.toDataURL("image/jpeg", q);
+    if (url.length <= 240000) break;
+    q -= 0.1;
+    if (q < 0.45) { q = 0.7; max = Math.round(max * 0.8); }
+  }
+  return url;
+}
+
+/* ---------- Muat data ---------- */
+async function loadStudent() {
+  const q = query(collection(db, "entri"), where("uid", "==", S.user.uid));
+  const snap = await getDocs(q);
+  S.entri = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => ms(b.dikemas_kini) - ms(a.dikemas_kini));
+  S.pengh = {};
+  for (const j of Object.keys(JENIS)) {
+    const d = await getDoc(doc(db, "penghantaran", S.user.uid + "_" + j));
+    if (d.exists()) S.pengh[j] = d.data();
+  }
+}
+async function loadAdmin() {
+  const [r, e, p] = await Promise.all([getDocs(collection(db, "pelajar_berdaftar")), getDocs(collection(db, "entri")), getDocs(collection(db, "penghantaran"))]);
+  S.admin.reg = r.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.nama || a.id).localeCompare(b.nama || b.id));
+  S.admin.entri = e.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => ms(b.dikemas_kini) - ms(a.dikemas_kini));
+  S.admin.pengh = p.docs.map(d => ({ id: d.id, ...d.data() }));
+  const g = await getDocs(collection(db, "galeri")); S.admin.gal = {}; g.docs.forEach(d => S.admin.gal[d.id] = d.data());
+}
+
+/* ---------- Paparan ---------- */
+function shell(inner) {
+  const who = S.user ? `<span>${esc(S.profile?.nama || S.user.displayName || S.user.email)}</span> <button class="btn" data-act="keluar" style="padding:5px 10px">Log keluar</button>` : "";
+  return `<header><div><h1>PSVK3443 Portfolio Seni Visual</h1><small>Asas Membentuk dan Membuat Binaan</small></div><div><a href="./" style="color:#fff;margin-right:12px">&larr; Laman utama</a>${who}</div></header><main>${inner}</main>`;
+}
+function viewLogin() {
+  return shell(`<div class="card center"><h2>Log masuk</h2>
+    <p>Gunakan akaun Google yang didaftarkan oleh pensyarah.</p>
+    <p><button class="btn pri" data-act="masuk">Log masuk dengan Google</button></p>
+    <p class="err">${esc(S.msg)}</p></div>
+    <div class="note"><b>Nota privasi.</b> Gambar dan tulisan yang anda muat naik disimpan dalam Firebase (Google Cloud) dan hanya boleh dilihat oleh anda dan pensyarah, kecuali karya yang dipilih pensyarah untuk galeri awam dengan persetujuan anda. Juruaudit boleh diberi akses baca sahaja atas permintaan. Hasil kerja disimpan selama 5 tahun untuk tujuan audit, kemudian dihapuskan atau dikembalikan kepada anda. Sistem merekod masa muat naik untuk tujuan audit; masa itu tidak dipaparkan kepada pelajar dan tidak digunakan untuk menolak penghantaran. Hanya data yang perlu dikumpulkan (nama dan e-mel).</div>`);
+}
+function viewTiada() {
+  return shell(`<div class="card center"><h2>E-mel belum didaftarkan</h2><p>${esc(S.user.email)} tiada dalam senarai pelajar. Sila hubungi pensyarah.</p></div>`);
+}
+
+function entriCard(e, admin) {
+  const th = (e.gambar || []).map(g => `<img src="${g}" alt="Gambar proses">`).join("");
+  return `<div class="card"><h3>${esc(e.tajuk)}</h3>
+    <div class="meta">${esc(TUGASAN[e.tugasan] || "")} · ${esc(e.bahagian)}${e.tarikh_kerja ? " · Tarikh kerja: " + esc(e.tarikh_kerja) : ""}${admin ? " · Dimuat naik: " + esc(fmt(e.dibuat_pada)) : ""}</div>
+    <div class="thumbs">${th}</div>
+    <p style="white-space:pre-wrap">${esc(e.penerangan)}</p>
+    <div>${badge(e.status)}</div>
+    ${e.komen_pensyarah ? `<div class="fb"><b>Komen pensyarah:</b> ${esc(e.komen_pensyarah)}</div>` : ""}
+    ${admin ? galeriBtn(e) + feedbackForm("entri", e) : `<p><button class="btn" data-act="sunting" data-id="${e.id}">Sunting</button> <button class="btn del" data-act="padam" data-id="${e.id}">Padam</button></p>`}
+  </div>`;
+}
+function galeriBtn(e) {
+  const on = !!S.admin.gal[e.id];
+  return `<p style="margin-top:10px">${on ? `<span class="ok">Dalam galeri awam.</span> <button class="btn del" data-act="tarik-galeri" data-id="${e.id}">Tarik balik dari galeri</button>` : `<button class="btn teal" data-act="terbit-galeri" data-id="${e.id}">Terbitkan ke galeri awam</button>`}</p>`;
+}
+function feedbackForm(kind, e) {
+  const opts = Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${((e.status || "menunggu") === k) ? "selected" : ""}>${v}</option>`).join("");
+  return `<div style="margin-top:10px"><label>Status semakan</label><select data-fbs="${e.id}">${opts}</select>
+    <label>Komen</label><textarea style="min-height:70px" data-fbk="${e.id}">${esc(e.komen_pensyarah || "")}</textarea>
+    <p><button class="btn teal" data-act="simpan-komen" data-kind="${kind}" data-id="${e.id}">Simpan semakan</button></p></div>`;
+}
+
+function formHtml() {
+  const f = S.form;
+  const tOpt = Object.entries(TUGASAN).map(([k, v]) => `<option value="${k}" ${f.tugasan === k ? "selected" : ""}>${v}</option>`).join("");
+  const bOpt = BAHAGIAN.map(b => `<option ${f.bahagian === b ? "selected" : ""}>${esc(b)}</option>`).join("");
+  const th = f.gambar.map((g, i) => `<div class="thumb"><img src="${g}" alt="Gambar ${i + 1}"><button data-act="buang-gambar" data-i="${i}" aria-label="Buang gambar">×</button></div>`).join("");
+  return `<div class="card"><h2>${f.id ? "Sunting entri" : "Entri baharu"}</h2>
+    <div class="row"><div><label>Tugasan</label><select data-f="tugasan">${tOpt}</select></div>
+    <div><label>Bahagian</label><select data-f="bahagian">${bOpt}</select></div></div>
+    <label>Tajuk entri</label><input type="text" data-f="tajuk" value="${esc(f.tajuk)}" maxlength="150">
+    <label>Gambar (1 hingga ${MAX_IMG})</label>
+    <div class="thumbs" id="thumbs">${th}</div>
+    <input type="file" accept="image/*" multiple data-act="fail" ${f.gambar.length >= MAX_IMG ? "disabled" : ""}>
+    <p class="hint">Gambar yang diambil sebelum ini dibenarkan. Gambar dimampatkan secara automatik.</p>
+    <label>Penerangan proses</label>
+    <textarea data-f="penerangan" maxlength="5000">${esc(f.penerangan)}</textarea>
+    <p class="hint">Terangkan: <b>apa yang anda lihat atau uji</b>, <b>apa yang anda faham</b> daripadanya, dan <b>apa yang anda putuskan</b> kerana itu. Gambar tanpa penerangan tidak dikira sebagai bukti proses.</p>
+    <label>Tarikh kerja (anggaran, pilihan)</label><input type="date" data-f="tarikh_kerja" value="${esc(f.tarikh_kerja)}">
+    <label style="font-weight:400"><input type="checkbox" data-f="akuan" ${f.akuan ? "checked" : ""}> Saya mengaku ini dokumentasi hasil kerja saya sendiri.</label>
+    <p class="err" id="ferr">${esc(S.msg)}</p>
+    <p><button class="btn pri" data-act="simpan-entri">Simpan entri</button> <button class="btn" data-act="batal">Batal</button></p></div>`;
+}
+
+function viewStudent() {
+  let inner = `<div class="tabs"><button class="tab ${S.tab === "entri" ? "on" : ""}" data-act="tab" data-t="entri">Entri saya</button><button class="tab ${S.tab === "pengh" ? "on" : ""}" data-act="tab" data-t="pengh">Penghantaran akhir</button></div>`;
+  if (S.tab === "entri") {
+    if (S.form) inner += formHtml();
+    else {
+      inner += `<p><button class="btn teal" data-act="baharu">+ Entri baharu</button></p>`;
+      inner += S.entri.length ? S.entri.map(e => entriCard(e, false)).join("") : `<div class="card center">Belum ada entri. Mulakan dengan entri baharu.</div>`;
+    }
+  } else {
+    inner += Object.entries(JENIS).map(([j, nama]) => {
+      const p = S.pengh[j] || {};
+      return `<div class="card"><h2>${nama}</h2>
+        <label>Pautan (e-Portfolio, folder atau gambar karya)</label><input type="url" data-p="${j}:pautan" value="${esc(p.pautan)}" placeholder="https://">
+        ${j === "karya_akhir_t3" ? `<label>Pelan Kos (senarai bahan, kuantiti, anggaran kos, cadangan harga jualan)</label><textarea data-p="${j}:pelan_kos">${esc(p.pelan_kos)}</textarea>` : ""}
+        <label>Catatan</label><textarea style="min-height:70px" data-p="${j}:catatan">${esc(p.catatan)}</textarea>
+        <p>${p.status ? badge(p.status) : ""} ${p.komen_pensyarah ? `<span class="fb">${esc(p.komen_pensyarah)}</span>` : ""}</p>
+        <p><button class="btn pri" data-act="simpan-pengh" data-j="${j}">Simpan</button> <span class="ok" id="ok-${j}"></span></p></div>`;
+    }).join("");
+  }
+  return shell(inner);
+}
+
+function viewAdmin() {
+  const A = S.admin;
+  let inner = `<div class="tabs">` + [["pelajar", "Pelajar"], ["daftar", "Senarai berdaftar"], ["eksport", "Eksport"]].map(([k, v]) => `<button class="tab ${S.tab === k ? "on" : ""}" data-act="tab" data-t="${k}">${v}</button>`).join("") + `</div>`;
+  if (S.tab === "pelajar" && !A.sel) {
+    const rows = A.reg.map(r => {
+      const es = A.entri.filter(e => (e.email || "").toLowerCase() === r.id);
+      const ph = A.pengh.filter(p => p.uid && es.some(e => e.uid === p.uid) || false);
+      const nu = es.filter(e => !e.status || e.status === "menunggu").length;
+      return `<tr class="click" data-act="pilih" data-id="${esc(r.id)}"><td>${esc(r.nama || r.id)}</td><td>${esc(r.kumpulan || "")}</td><td>${es.length}</td><td>${nu}</td><td>${ph.length}</td></tr>`;
+    }).join("");
+    inner += `<div class="card"><h2>Pelajar</h2><table><tr><th>Nama</th><th>Kumpulan</th><th>Entri</th><th>Menunggu semakan</th><th>Penghantaran akhir</th></tr>${rows || `<tr><td colspan="5">Belum ada pelajar didaftarkan.</td></tr>`}</table></div>`;
+  } else if (S.tab === "pelajar") {
+    const r = A.reg.find(x => x.id === A.sel) || { id: A.sel };
+    const es = A.entri.filter(e => (e.email || "").toLowerCase() === A.sel);
+    const uids = new Set(es.map(e => e.uid));
+    const ph = A.pengh.filter(p => uids.has(p.uid));
+    inner += `<p><button class="btn" data-act="kembali">&larr; Senarai pelajar</button></p><h2>${esc(r.nama || r.id)}</h2>`;
+    inner += ph.map(p => `<div class="card"><h3>${esc(JENIS[p.jenis] || p.jenis)}</h3><p class="meta">Dikemas kini: ${esc(fmt(p.dikemas_kini))}</p><p>${p.pautan ? `<a href="${esc(p.pautan)}" target="_blank" rel="noopener">${esc(p.pautan)}</a>` : "Tiada pautan"}</p>${p.pelan_kos ? `<p style="white-space:pre-wrap"><b>Pelan Kos:</b> ${esc(p.pelan_kos)}</p>` : ""}<p style="white-space:pre-wrap">${esc(p.catatan || "")}</p>${badge(p.status)}${feedbackForm("penghantaran", { ...p, id: p.id })}</div>`).join("");
+    inner += es.length ? es.map(e => entriCard(e, true)).join("") : `<div class="card center">Pelajar ini belum memuat naik entri.</div>`;
+  } else if (S.tab === "daftar") {
+    inner += `<div class="card"><h2>Daftar pelajar</h2><p class="hint">Satu baris satu pelajar: <code>emel, nama, kumpulan</code> (nama dan kumpulan pilihan). Tampal terus daripada Classroom jika perlu.</p>
+      <textarea id="daftar" placeholder="pelajar1@gmail.com, Nama Pelajar, Kumpulan A"></textarea>
+      <p><button class="btn teal" data-act="daftar">Daftarkan</button> <span id="dmsg" class="ok"></span></p></div>
+      <div class="card"><h3>Berdaftar (${A.reg.length})</h3><table><tr><th>E-mel</th><th>Nama</th><th>Kumpulan</th><th></th></tr>${A.reg.map(r => `<tr><td>${esc(r.id)}</td><td>${esc(r.nama || "")}</td><td>${esc(r.kumpulan || "")}</td><td><button class="btn del" style="padding:3px 9px" data-act="nyahdaftar" data-id="${esc(r.id)}">Buang</button></td></tr>`).join("")}</table></div>`;
+  } else {
+    inner += `<div class="card"><h2>Eksport</h2><p>CSV ringkasan (tanpa gambar) dan sandaran penuh JSON (termasuk gambar). Simpan salinan secara berkala dalam Drive institusi.</p>
+      <p><button class="btn pri" data-act="csv">Muat turun CSV</button> <button class="btn" data-act="json">Muat turun sandaran penuh (JSON)</button></p></div>`;
+  }
+  return shell(inner);
+}
+
+function render() {
+  if (!S.user) $.innerHTML = viewLogin();
+  else if (S.role === "admin") $.innerHTML = viewAdmin();
+  else if (S.role === "pelajar") $.innerHTML = viewStudent();
+  else if (S.role === "tiada") $.innerHTML = viewTiada();
+  else $.innerHTML = shell(`<div class="card center">Memuatkan...</div>`);
+}
+
+/* ---------- Tindakan ---------- */
+function download(name, text, type) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text], { type }));
+  a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+const csvc = v => '"' + String(v ?? "").replace(/"/g, '""') + '"';
+
+async function act(el) {
+  const a = el.dataset.act;
+  try {
+    if (a === "masuk") {
+      const p = new GoogleAuthProvider();
+      try { await signInWithPopup(auth, p); }
+      catch (e) { if (e.code === "auth/popup-blocked" || e.code === "auth/operation-not-supported-in-this-environment") await signInWithRedirect(auth, p); else throw e; }
+    } else if (a === "keluar") { await signOut(auth); }
+    else if (a === "tab") { S.tab = el.dataset.t; S.form = null; S.msg = ""; if (S.role === "admin") S.admin.sel = null; render(); }
+    else if (a === "baharu") { S.form = { tugasan: "T2", bahagian: BAHAGIAN[1], tajuk: "", penerangan: "", tarikh_kerja: "", akuan: false, gambar: [] }; S.msg = ""; render(); }
+    else if (a === "sunting") { const e = S.entri.find(x => x.id === el.dataset.id); S.form = { id: e.id, tugasan: e.tugasan, bahagian: e.bahagian, tajuk: e.tajuk, penerangan: e.penerangan, tarikh_kerja: e.tarikh_kerja || "", akuan: false, gambar: [...(e.gambar || [])] }; S.msg = ""; render(); window.scrollTo(0, 0); }
+    else if (a === "batal") { S.form = null; S.msg = ""; render(); }
+    else if (a === "buang-gambar") { S.form.gambar.splice(+el.dataset.i, 1); render(); }
+    else if (a === "padam") { if (confirm("Padam entri ini?")) { await deleteDoc(doc(db, "entri", el.dataset.id)); await loadStudent(); render(); } }
+    else if (a === "simpan-entri") await simpanEntri();
+    else if (a === "simpan-pengh") await simpanPengh(el.dataset.j);
+    else if (a === "pilih") { S.admin.sel = el.dataset.id; render(); window.scrollTo(0, 0); }
+    else if (a === "terbit-galeri") {
+      const e = S.admin.entri.find(x => x.id === el.dataset.id);
+      if (!confirm("Terbitkan gambar pertama, tajuk dan nama pelajar ini ke galeri awam? Pastikan pelajar telah bersetuju.")) return;
+      await setDoc(doc(db, "galeri", e.id), { entri_id: e.id, nama: e.nama || "", tajuk: e.tajuk, penerangan: (e.penerangan || "").slice(0, 400), gambar: e.gambar[0], tugasan: e.tugasan || "", diterbit_pada: serverTimestamp() });
+      await loadAdmin(); render();
+    }
+    else if (a === "tarik-galeri") { await deleteDoc(doc(db, "galeri", el.dataset.id)); await loadAdmin(); render(); }
+    else if (a === "kembali") { S.admin.sel = null; render(); }
+    else if (a === "simpan-komen") {
+      const id = el.dataset.id, kind = el.dataset.kind;
+      const st = document.querySelector(`[data-fbs="${id}"]`).value, km = document.querySelector(`[data-fbk="${id}"]`).value;
+      await updateDoc(doc(db, kind, id), { status: st, komen_pensyarah: km, disemak_pada: serverTimestamp() });
+      await loadAdmin(); render();
+    }
+    else if (a === "daftar") {
+      const lines = document.getElementById("daftar").value.split("\n").map(l => l.trim()).filter(Boolean);
+      let n = 0;
+      for (const l of lines) {
+        const [em, nama, kump] = l.split(",").map(x => x.trim());
+        if (!em || !em.includes("@")) continue;
+        await setDoc(doc(db, "pelajar_berdaftar", em.toLowerCase()), { nama: nama || "", kumpulan: kump || "" }); n++;
+      }
+      await loadAdmin(); render(); document.getElementById("dmsg").textContent = n + " pelajar didaftarkan.";
+    }
+    else if (a === "nyahdaftar") { if (confirm("Buang pelajar dari senarai berdaftar? Entri sedia ada tidak dipadam.")) { await deleteDoc(doc(db, "pelajar_berdaftar", el.dataset.id)); await loadAdmin(); render(); } }
+    else if (a === "csv") {
+      const head = ["Nama", "E-mel", "Tugasan", "Bahagian", "Tajuk", "Tarikh kerja", "Dimuat naik", "Status", "Komen", "Bil. gambar"];
+      const rows = S.admin.entri.map(e => [e.nama, e.email, TUGASAN[e.tugasan], e.bahagian, e.tajuk, e.tarikh_kerja, fmt(e.dibuat_pada), STATUS[e.status || "menunggu"], e.komen_pensyarah, (e.gambar || []).length].map(csvc).join(","));
+      download("rekod-psvk3443.csv", "﻿" + [head.map(csvc).join(","), ...rows].join("\n"), "text/csv;charset=utf-8");
+    }
+    else if (a === "json") { download("sandaran-psvk3443.json", JSON.stringify({ dieksport: new Date().toISOString(), berdaftar: S.admin.reg, entri: S.admin.entri, penghantaran: S.admin.pengh }), "application/json"); }
+  } catch (e) { console.error(e); alert("Ralat: " + (e.message || e.code || e)); }
+}
+
+async function simpanEntri() {
+  const f = S.form;
+  if (!f.tajuk.trim() || !f.penerangan.trim()) { S.msg = "Tajuk dan penerangan diperlukan."; return render(); }
+  if (!f.gambar.length) { S.msg = "Muat naik sekurang-kurangnya satu gambar."; return render(); }
+  if (!f.akuan) { S.msg = "Sila tandakan akuan hasil kerja sendiri."; return render(); }
+  if (words(f.penerangan) < 20 && !confirm("Penerangan anda ringkas (kurang 20 patah perkataan). Sudahkah anda menerangkan apa yang dilihat, difahami dan diputuskan? Teruskan menyimpan?")) return;
+  const data = { tugasan: f.tugasan, bahagian: f.bahagian, tajuk: f.tajuk.trim(), penerangan: f.penerangan.trim(), tarikh_kerja: f.tarikh_kerja || "", akuan: true, gambar: f.gambar, dikemas_kini: serverTimestamp() };
+  if (f.id) await updateDoc(doc(db, "entri", f.id), data);
+  else await addDoc(collection(db, "entri"), { ...data, uid: S.user.uid, email: S.user.email.toLowerCase(), nama: S.profile?.nama || S.user.displayName || "", dibuat_pada: serverTimestamp() });
+  S.form = null; S.msg = ""; await loadStudent(); render();
+}
+async function simpanPengh(j) {
+  const get = k => { const el = document.querySelector(`[data-p="${j}:${k}"]`); return el ? el.value.trim() : ""; };
+  const id = S.user.uid + "_" + j;
+  const exists = !!S.pengh[j];
+  const data = { pautan: get("pautan"), catatan: get("catatan"), dikemas_kini: serverTimestamp() };
+  if (j === "karya_akhir_t3") data.pelan_kos = get("pelan_kos");
+  if (exists) await updateDoc(doc(db, "penghantaran", id), data);
+  else await setDoc(doc(db, "penghantaran", id), { ...data, uid: S.user.uid, jenis: j });
+  await loadStudent(); render();
+  const ok = document.getElementById("ok-" + j); if (ok) ok.textContent = "Disimpan.";
+}
+
+/* ---------- Peristiwa ---------- */
+$.addEventListener("click", ev => { const el = ev.target.closest("[data-act]"); if (el && el.tagName !== "INPUT") act(el); });
+$.addEventListener("input", ev => {
+  const k = ev.target.dataset.f; if (!k || !S.form) return;
+  S.form[k] = ev.target.type === "checkbox" ? ev.target.checked : ev.target.value;
+});
+$.addEventListener("change", async ev => {
+  const t = ev.target;
+  if (t.dataset.f && S.form) { S.form[t.dataset.f] = t.type === "checkbox" ? t.checked : t.value; return; }
+  if (t.dataset.act === "fail") {
+    const files = [...t.files].slice(0, MAX_IMG - S.form.gambar.length);
+    S.msg = "";
+    for (const f of files) { try { S.form.gambar.push(await compress(f)); } catch (e) { S.msg = "Satu gambar tidak dapat dibuka."; } }
+    render();
+  }
+});
+
+onAuthStateChanged(auth, async u => {
+  S.user = u; S.role = null; S.profile = null; S.msg = "";
+  if (!u) return render();
+  render();
+  try {
+    const email = (u.email || "").toLowerCase();
+    if (ADMIN_EMAILS.map(x => x.toLowerCase()).includes(email)) { S.role = "admin"; S.tab = "pelajar"; await loadAdmin(); }
+    else {
+      const d = await getDoc(doc(db, "pelajar_berdaftar", email));
+      if (d.exists()) { S.role = "pelajar"; S.profile = d.data(); S.tab = "entri"; await loadStudent(); }
+      else S.role = "tiada";
+    }
+  } catch (e) { console.error(e); S.role = "tiada"; }
+  render();
+});
+render();
+</script>
+</body>
+</html>
