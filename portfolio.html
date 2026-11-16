@@ -2,6 +2,7 @@
 <html lang="ms">
 <head>
 <meta charset="utf-8">
+<meta name="versi" content="v2026-11-16-a">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PSVK3443 Portfolio Seni Visual</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -185,9 +186,11 @@ function viewTiada() {
 function entriCard(e, admin) {
   const th = (e.gambar || []).map(g => `<img src="${g}" alt="Gambar proses">`).join("");
   return `<div class="card"><h3>${esc(e.tajuk)}</h3>
-    <div class="meta">${esc(TUGASAN[e.tugasan] || "")} · ${esc(e.bahagian)}${e.tarikh_kerja ? " · Tarikh kerja: " + esc(e.tarikh_kerja) : ""}${admin ? " · Dimuat naik: " + esc(fmt(e.dibuat_pada)) : ""}</div>
+    <div class="meta">${esc(TUGASAN[e.tugasan] || "")} · ${esc(e.bahagian)}${e.tarikh_kerja ? " · Tarikh bukti: " + esc(e.tarikh_kerja) : ""}${admin ? " · Dimuat naik: " + esc(fmt(e.dibuat_pada)) : ""}</div>
     <div class="thumbs">${th}</div>
-    <p style="white-space:pre-wrap">${esc(e.penerangan)}</p>
+    ${e.pautan ? `<p><a href="${esc(e.pautan)}" target="_blank" rel="noopener">${esc(e.pautan)}</a></p>` : ""}
+    <p style="white-space:pre-wrap"><b>Refleksi:</b> ${esc(e.penerangan)}</p>
+    ${e.respons ? `<p style="white-space:pre-wrap"><b>Maklum balas dan respons:</b> ${esc(e.respons)}</p>` : ""}
     <div>${badge(e.status)}</div>
     ${e.komen_pensyarah ? `<div class="fb"><b>Komen pensyarah:</b> ${esc(e.komen_pensyarah)}</div>` : ""}
     ${admin ? galeriBtn(e) + feedbackForm("entri", e) : `<p><button class="btn" data-act="sunting" data-id="${e.id}">Sunting</button> <button class="btn del" data-act="padam" data-id="${e.id}">Padam</button></p>`}
@@ -213,15 +216,20 @@ function formHtml() {
     <div class="row"><div><label>Tugasan</label><select data-f="tugasan">${tOpt}</select></div>
     <div><label>Bahagian</label><select data-f="bahagian">${bOpt}</select></div></div>
     <label>Tajuk entri</label><input type="text" data-f="tajuk" value="${esc(f.tajuk)}" maxlength="150">
-    <label>Gambar (1 hingga ${MAX_IMG})</label>
+    <label>Gambar atau pautan bukti (sekurang-kurangnya satu)</label>
     <div class="thumbs" id="thumbs">${th}</div>
     <input type="file" accept="image/*" multiple data-act="fail" ${f.gambar.length >= MAX_IMG ? "disabled" : ""}>
-    <p class="hint">Gambar yang diambil sebelum ini dibenarkan. Gambar dimampatkan secara automatik.</p>
-    <label>Penerangan proses</label>
+    <p class="hint">Maksimum ${MAX_IMG} gambar, dimampatkan secara automatik. Entri tanpa bukti boleh dibiarkan kosong; jangan menyimpannya.</p>
+    <label>Pautan bukti (pilihan jika ada gambar)</label><input type="url" data-f="pautan" value="${esc(f.pautan)}" placeholder="https://">
+    <label>Tarikh sebenar bukti</label><input type="date" data-f="tarikh_kerja" value="${esc(f.tarikh_kerja)}">
+    <p class="hint">Yang dikira ialah tarikh sebenar bukti dihasilkan, bukan tarikh anda memuat naik.</p>
+    <label>Refleksi (50 hingga 80 patah perkataan) <span class="meta" id="wc-p"></span></label>
     <textarea data-f="penerangan" maxlength="5000">${esc(f.penerangan)}</textarea>
-    <p class="hint">Terangkan: <b>apa yang anda lihat atau uji</b>, <b>apa yang anda faham</b> daripadanya, dan <b>apa yang anda putuskan</b> kerana itu. Gambar tanpa penerangan tidak dikira sebagai bukti proses.</p>
-    <label>Tarikh kerja (anggaran, pilihan)</label><input type="date" data-f="tarikh_kerja" value="${esc(f.tarikh_kerja)}">
-    <label style="font-weight:400"><input type="checkbox" data-f="akuan" ${f.akuan ? "checked" : ""}> Saya mengaku ini dokumentasi hasil kerja saya sendiri.</label>
+    <p class="hint">Terangkan apa yang anda lihat atau uji, apa yang anda faham, dan apa yang anda putuskan kerana itu.</p>
+    ${(f.id ? S.entri.length > 1 : S.entri.length > 0) ? `<label>Maklum balas dan respons (30 hingga 50 patah perkataan) <span class="meta" id="wc-r"></span></label>
+    <textarea style="min-height:90px" data-f="respons" maxlength="3000">${esc(f.respons)}</textarea>
+    <p class="hint">Nyatakan maklum balas yang anda terima dan bagaimana anda bertindak balas.</p>` : ""}
+    <label style="font-weight:400"><input type="checkbox" data-f="akuan" ${f.akuan ? "checked" : ""}> Saya mengaku log ini disusun kemudian dan bukti ialah hasil usaha saya sendiri.</label>
     <p class="err" id="ferr">${esc(S.msg)}</p>
     <p><button class="btn pri" data-act="simpan-entri">Simpan entri</button> <button class="btn" data-act="batal">Batal</button></p></div>`;
 }
@@ -304,8 +312,8 @@ async function act(el) {
       catch (e) { if (e.code === "auth/popup-blocked" || e.code === "auth/operation-not-supported-in-this-environment") await signInWithRedirect(auth, p); else throw e; }
     } else if (a === "keluar") { await signOut(auth); }
     else if (a === "tab") { S.tab = el.dataset.t; S.form = null; S.msg = ""; if (S.role === "admin") S.admin.sel = null; render(); }
-    else if (a === "baharu") { S.form = { tugasan: "T2", bahagian: BAHAGIAN[1], tajuk: "", penerangan: "", tarikh_kerja: "", akuan: false, gambar: [] }; S.msg = ""; render(); }
-    else if (a === "sunting") { const e = S.entri.find(x => x.id === el.dataset.id); S.form = { id: e.id, tugasan: e.tugasan, bahagian: e.bahagian, tajuk: e.tajuk, penerangan: e.penerangan, tarikh_kerja: e.tarikh_kerja || "", akuan: false, gambar: [...(e.gambar || [])] }; S.msg = ""; render(); window.scrollTo(0, 0); }
+    else if (a === "baharu") { S.form = { tugasan: "T2", bahagian: BAHAGIAN[1], tajuk: "", penerangan: "", pautan: "", respons: "", tarikh_kerja: "", akuan: false, gambar: [] }; S.msg = ""; render(); }
+    else if (a === "sunting") { const e = S.entri.find(x => x.id === el.dataset.id); S.form = { id: e.id, tugasan: e.tugasan, bahagian: e.bahagian, tajuk: e.tajuk, penerangan: e.penerangan, pautan: e.pautan || "", respons: e.respons || "", tarikh_kerja: e.tarikh_kerja || "", akuan: false, gambar: [...(e.gambar || [])] }; S.msg = ""; render(); window.scrollTo(0, 0); }
     else if (a === "batal") { S.form = null; S.msg = ""; render(); }
     else if (a === "buang-gambar") { S.form.gambar.splice(+el.dataset.i, 1); render(); }
     else if (a === "padam") { if (confirm("Padam entri ini?")) { await deleteDoc(doc(db, "entri", el.dataset.id)); await loadStudent(); render(); } }
@@ -314,6 +322,7 @@ async function act(el) {
     else if (a === "pilih") { S.admin.sel = el.dataset.id; render(); window.scrollTo(0, 0); }
     else if (a === "terbit-galeri") {
       const e = S.admin.entri.find(x => x.id === el.dataset.id);
+      if (!(e.gambar || []).length) { alert("Entri ini tiada gambar untuk galeri."); return; }
       if (!confirm("Terbitkan gambar pertama, tajuk dan nama pelajar ini ke galeri awam? Pastikan pelajar telah bersetuju.")) return;
       await setDoc(doc(db, "galeri", e.id), { entri_id: e.id, nama: e.nama || "", tajuk: e.tajuk, penerangan: (e.penerangan || "").slice(0, 400), gambar: e.gambar[0], tugasan: e.tugasan || "", diterbit_pada: serverTimestamp() });
       await loadAdmin(); render();
@@ -338,7 +347,7 @@ async function act(el) {
     }
     else if (a === "nyahdaftar") { if (confirm("Buang pelajar dari senarai berdaftar? Entri sedia ada tidak dipadam.")) { await deleteDoc(doc(db, "pelajar_berdaftar", el.dataset.id)); await loadAdmin(); render(); } }
     else if (a === "csv") {
-      const head = ["Nama", "E-mel", "Tugasan", "Bahagian", "Tajuk", "Tarikh kerja", "Dimuat naik", "Status", "Komen", "Bil. gambar"];
+      const head = ["Nama", "E-mel", "Tugasan", "Bahagian", "Tajuk", "Tarikh bukti", "Dimuat naik", "Status", "Komen", "Bil. gambar"];
       const rows = S.admin.entri.map(e => [e.nama, e.email, TUGASAN[e.tugasan], e.bahagian, e.tajuk, e.tarikh_kerja, fmt(e.dibuat_pada), STATUS[e.status || "menunggu"], e.komen_pensyarah, (e.gambar || []).length].map(csvc).join(","));
       download("rekod-psvk3443.csv", "﻿" + [head.map(csvc).join(","), ...rows].join("\n"), "text/csv;charset=utf-8");
     }
@@ -349,10 +358,13 @@ async function act(el) {
 async function simpanEntri() {
   const f = S.form;
   if (!f.tajuk.trim() || !f.penerangan.trim()) { S.msg = "Tajuk dan penerangan diperlukan."; return render(); }
-  if (!f.gambar.length) { S.msg = "Muat naik sekurang-kurangnya satu gambar."; return render(); }
+  if (!f.gambar.length && !(f.pautan || "").trim()) { S.msg = "Sertakan sekurang-kurangnya satu gambar atau pautan bukti."; return render(); }
+  if (!f.tarikh_kerja) { S.msg = "Isi tarikh sebenar bukti."; return render(); }
   if (!f.akuan) { S.msg = "Sila tandakan akuan hasil kerja sendiri."; return render(); }
-  if (words(f.penerangan) < 20 && !confirm("Penerangan anda ringkas (kurang 20 patah perkataan). Sudahkah anda menerangkan apa yang dilihat, difahami dan diputuskan? Teruskan menyimpan?")) return;
-  const data = { tugasan: f.tugasan, bahagian: f.bahagian, tajuk: f.tajuk.trim(), penerangan: f.penerangan.trim(), tarikh_kerja: f.tarikh_kerja || "", akuan: true, gambar: f.gambar, dikemas_kini: serverTimestamp() };
+  const wp = words(f.penerangan), wr = words(f.respons);
+  if ((wp < 50 || wp > 80) && !confirm("Refleksi anda " + wp + " patah perkataan (sasaran 50 hingga 80). Teruskan menyimpan?")) return;
+  if (f.respons && (wr < 30 || wr > 50) && !confirm("Maklum balas dan respons anda " + wr + " patah perkataan (sasaran 30 hingga 50). Teruskan menyimpan?")) return;
+  const data = { tugasan: f.tugasan, bahagian: f.bahagian, tajuk: f.tajuk.trim(), penerangan: f.penerangan.trim(), pautan: (f.pautan || "").trim(), respons: (f.respons || "").trim(), tarikh_kerja: f.tarikh_kerja, akuan: true, gambar: f.gambar, dikemas_kini: serverTimestamp() };
   if (f.id) await updateDoc(doc(db, "entri", f.id), data);
   else await addDoc(collection(db, "entri"), { ...data, uid: S.user.uid, email: S.user.email.toLowerCase(), nama: S.profile?.nama || S.user.displayName || "", dibuat_pada: serverTimestamp() });
   S.form = null; S.msg = ""; await loadStudent(); render();
@@ -374,6 +386,7 @@ $.addEventListener("click", ev => { const el = ev.target.closest("[data-act]"); 
 $.addEventListener("input", ev => {
   const k = ev.target.dataset.f; if (!k || !S.form) return;
   S.form[k] = ev.target.type === "checkbox" ? ev.target.checked : ev.target.value;
+  const c = document.getElementById(k === "penerangan" ? "wc-p" : k === "respons" ? "wc-r" : ""); if (c) c.textContent = "(" + words(ev.target.value) + " patah perkataan)";
 });
 $.addEventListener("change", async ev => {
   const t = ev.target;
@@ -408,5 +421,6 @@ onAuthStateChanged(auth, async u => {
 });
 render();
 </script>
+<div id="versi" style="position:fixed;right:8px;bottom:6px;font:11px/1 'Space Mono',monospace;opacity:.55;z-index:50;pointer-events:none">v2026-11-16-a</div>
 </body>
 </html>
