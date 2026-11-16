@@ -878,7 +878,7 @@ html.no-parallax .bg-parallax{transform:none !important}
       <div class="announce"><span class="date">27 OKT</span><div><h4>Tugasan 2: e-Portfolio (40%)</h4><p>Log proses mingguan, e-portfolio digital dan semakan sampel fizikal. Minimum empat teknik didokumentasikan dengan gambar dan penerangan.</p></div><span class="pill">Tugasan 2</span></div>
       <div class="announce"><span class="date">17 NOV</span><div><h4>Tugasan 3: Hasil Karya (40%)</h4><p>Karya akhir dan Pelan Kos. Penilaian akhir pada Minggu 14.</p></div><span class="pill">Tugasan 3</span></div>
     </div>
-    <p style="margin-top:22px"><a class="btn solid" href="portfolio.html">Ruang portfolio pelajar</a></p>
+    <p style="margin-top:22px;display:flex;gap:12px;flex-wrap:wrap"><a class="btn solid" href="portfolio.html">Ruang portfolio pelajar</a><span id="docLinks" style="display:contents"></span></p>
   </div>
 </section>
 
@@ -1245,6 +1245,13 @@ html.no-parallax .bg-parallax{transform:none !important}
     window.addEventListener('resize', onScrollOrResize);
     updateParallax();
   }
+</script>
+<script>
+/* Isi pautan dokumen Tugasan 3 di sini (kosongkan jika belum ada). */
+const PAUTAN_PANDUAN = ""; // Panduan Pelajar: pembentangan 3 minit dan apresiasi rakan
+const PAUTAN_BORANG = "";  // Borang Log Proses (Word/PDF) untuk penghantaran luar talian
+(function(){ const h = document.getElementById("docLinks"); if (!h) return;
+  [[PAUTAN_PANDUAN,"Panduan Pelajar (Tugasan 3)"],[PAUTAN_BORANG,"Borang Log Proses (Word/PDF)"]].forEach(([u,t])=>{ if(u){ const a=document.createElement("a"); a.className="btn ghost"; a.href=u; a.target="_blank"; a.rel="noopener"; a.textContent=t; h.appendChild(a); } }); })();
 </script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
