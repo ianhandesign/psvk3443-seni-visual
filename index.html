@@ -2,6 +2,7 @@
 <html lang="ms">
 <head>
 <meta charset="UTF-8">
+<meta name="versi" content="v2026-11-16-c">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PSVK3443 Asas Membentuk dan Membuat Binaan</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -422,7 +423,7 @@ a:focus-visible, button:focus-visible{outline:2px solid var(--coral);outline-off
     radial-gradient(closest-side at 80% 72%, rgba(139,92,246,0.20), transparent 70%),
     radial-gradient(closest-side at 30% 92%, rgba(255,79,94,0.16), transparent 70%);}
 .bg-parallax::before{content:"";position:absolute;inset:0;opacity:.5;
-  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:72px 72px;}
+  background-image:repeating-linear-gradient(45deg,var(--line) 0,var(--line) 1px,transparent 1px,transparent 48px);}
 :root[data-theme="dark"] .bg-parallax{opacity:.7}
 html.no-parallax .bg-parallax{transform:none !important}
 </style>
@@ -449,7 +450,7 @@ html.no-parallax .bg-parallax{transform:none !important}
       <a href="#rujukan">Rujukan &amp; Bahan</a>
       <a href="#tugasan">Tugasan</a>
       <a href="#galeri">Galeri</a>
-      <a href="portfolio.html" style="font-weight:700">Log masuk pelajar</a>
+      <a href="portfolio.html" style="font-weight:700">Log masuk</a>
     </nav>
   </div>
 </header>
@@ -463,7 +464,7 @@ html.no-parallax .bg-parallax{transform:none !important}
       <div class="cta-row">
         <a class="btn solid" href="#rujukan">Mula dengan Topik 1</a>
         <a class="btn ghost" href="#galeri">Lawat Galeri</a>
-        <a class="btn ghost" href="portfolio.html">Log masuk pelajar</a>
+        <a class="btn ghost" href="portfolio.html">Log masuk</a>
       </div>
     </div>
     <div class="hero-visual">
@@ -878,7 +879,7 @@ html.no-parallax .bg-parallax{transform:none !important}
       <div class="announce"><span class="date">27 OKT</span><div><h4>Tugasan 2: e-Portfolio (40%)</h4><p>Log proses mingguan, e-portfolio digital dan semakan sampel fizikal. Minimum empat teknik didokumentasikan dengan gambar dan penerangan.</p></div><span class="pill">Tugasan 2</span></div>
       <div class="announce"><span class="date">17 NOV</span><div><h4>Tugasan 3: Hasil Karya (40%)</h4><p>Karya akhir dan Pelan Kos. Penilaian akhir pada Minggu 14.</p></div><span class="pill">Tugasan 3</span></div>
     </div>
-    <p style="margin-top:22px;display:flex;gap:12px;flex-wrap:wrap"><a class="btn solid" href="portfolio.html">Ruang portfolio pelajar</a><span id="docLinks" style="display:contents"></span></p>
+    <p style="margin-top:22px;display:flex;gap:12px;flex-wrap:wrap"><a class="btn solid" href="portfolio.html">Ruang portfolio dan log masuk</a><span id="docLinks" style="display:contents"></span></p>
   </div>
 </section>
 
@@ -911,7 +912,7 @@ html.no-parallax .bg-parallax{transform:none !important}
         <li><a href="#rujukan">Rujukan &amp; Bahan</a></li>
         <li><a href="#tugasan">Tugasan</a></li>
         <li><a href="#galeri">Galeri</a></li>
-        <li><a href="portfolio.html">Log masuk pelajar</a></li>
+        <li><a href="portfolio.html">Log masuk</a></li>
       </ul>
     </div>
     <div>
@@ -1272,5 +1273,6 @@ try {
 } catch (e) { console.error(e); grid.innerHTML = '<p style="color:#fff">Galeri tidak dapat dimuatkan sekarang.</p>'; }
 </script>
 
+<div id="versi" style="position:fixed;right:8px;bottom:6px;font:11px/1 'Space Mono',monospace;opacity:.55;z-index:50;pointer-events:none">v2026-11-16-c</div>
 </body>
 </html>
